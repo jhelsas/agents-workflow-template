@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Commit staged changes with the repo-local identity workaround and the
+# mandatory trailers (AGENTS.md §2.5, §2.10).
+# Usage: bin/tw-commit "commit message" "role(model)"   (message via stdin ok)
+#   e.g. bin/tw-commit "M12: the floor fix" "worker({{WORKER_MODEL}})"
+# The message body must already carry its "Role: <role>(<model>)" line —
+# this wrapper appends the Co-authored-by signature, which records the
+# agent, the model, and the host the work ran on.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+if [ "$#" -ge 1 ]; then
+  MSG="$1"
+else
+  MSG="$(cat)"
+fi
+HOST="$(hostname -s 2>/dev/null || hostname)"
+ROLE="${2:-unspecified}"
+SIGNATURE="Co-authored-by: Kilo $ROLE @ $HOST"
+# ADAPT: the committing identity — repo-local so the commit does not depend
+# on the host's global git config.
+git -c user.name="{{OWNER_NAME}}" \
+    -c user.email="{{OWNER_EMAIL}}" commit -F - <<COMMIT_EOF
+$MSG
+
+$SIGNATURE
+COMMIT_EOF

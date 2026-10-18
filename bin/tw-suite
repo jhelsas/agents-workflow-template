@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Full-suite gate (run before every code-touching commit; AGENTS.md §2.3).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. \
+  python -B -m pytest tests/ -q -p no:cacheprovider

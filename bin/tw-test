@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Targeted tests with the project's mandatory environment prefix.
+# Usage: bin/tw-test tests/test_<module>.py -q
+#        bin/tw-test tests/test_<module>.py::test_<node> --lf --tb=short
+# ADAPT (once, at adoption): set the env vars your project requires —
+# thread pinning for reproducibility, import paths, bytecode/cache
+# isolation. The contract is that NOBODY retypes this prefix by hand
+# (AGENTS.md §2.8 rule 1).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. \
+  python -B -m pytest "$@" -p no:cacheprovider
