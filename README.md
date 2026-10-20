@@ -68,7 +68,7 @@ agent-workflow-template/
 ├── roles/                      ← the six canonical role definitions (host-neutral)
 │   ├── worker.md  reviewer.md  advisor.md  planner.md
 │   └── math-reviewer.md  math-referee.md  (the optional math pair)
-├── .kilo/agent/                ← example host adapters (Kilo) — pointers to roles/
+├── .agents/agents/             ← example host adapters (goose) — pointers to roles/
 ├── docs/
 │   ├── STATE-OF-THE-PROJECT.md  ← the situation report (read FIRST)
 │   ├── REVIEW_LOG.md            ← reviewer → planner channel
@@ -95,11 +95,16 @@ ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the four
 1. **Copy the skeleton.** Everything above except this README into the
    project root. `roles/` is committed and travels with the clone — the
    workflow does not assume any particular agent host. If your host
-   auto-loads role files from its own directory (Kilo: `.kilo/agent/`),
-   create **thin pointer adapters** there, like the ones in this template,
-   and gitignore that directory: adapters point at `roles/<role>.md`, never
-   copy them (AGENTS.md §2.0). Not using Kilo? Delete `.kilo/` — for any
-   other host (or a human), `roles/<role>.md` is the definition to load.
+   discovers agent files from its own directory (goose: `.agents/agents/`,
+   a custom agent with a `name:` frontmatter — goose reads `AGENTS.md`
+   itself as a context file, `CONTEXT_FILE_NAMES` defaults to
+   `["AGENTS.md", ".goosehints"]`, so only `roles/<role>.md` needs the
+   pointer), keep the **thin pointer adapters** this template ships there,
+   pointed at your `roles/<role>.md` — never copy the canonical content
+   (AGENTS.md §2.0). Any other host: create the same thin-pointer pattern
+   wherever it auto-loads, and gitignore that directory. Not using goose?
+   Delete `.agents/` — for any other host (or a human),
+   `roles/<role>.md` is the definition to load.
 2. **Fill the placeholders** (see §4 below) across AGENTS.md, SPEC.md,
    STATE, and the `bin/` wrappers.
 3. **Adapt `bin/`** to your test runner and environment. The contract is not

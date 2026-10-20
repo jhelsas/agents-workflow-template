@@ -90,7 +90,7 @@ def test_planner_no_execute_is_dropped():
 
 def test_commit_trailer_green_normal():
     msg = ("fix: thing\n\nRole: worker(deepseek-v4.1-flash)\n\n"
-           "Co-authored-by: Kilo worker(deepseek-v4.1-flash)\n")
+           "Co-authored-by: goose worker(deepseek-v4.1-flash)\n")
     p = run_guard("--guard", "commit-trailer", "--role",
                   "worker(deepseek-v4.1-flash)", "--message", msg)
     assert p.returncode == 0
@@ -107,7 +107,7 @@ def test_commit_trailer_red_missing_trailer():
 
 
 def test_commit_trailer_red_role_mismatch():
-    msg = "fix\n\nRole: worker(m)\n\nCo-authored-by: Kilo worker(m)\n"
+    msg = "fix\n\nRole: worker(m)\n\nCo-authored-by: goose worker(m)\n"
     p = run_guard("--guard", "commit-trailer", "--role", "planner(m)",
                   "--message", msg)
     assert p.returncode == 2
@@ -115,19 +115,19 @@ def test_commit_trailer_red_role_mismatch():
 
 def test_commit_trailer_red_duplicate_role_lines():
     msg = ("fix\n\nRole: worker(m)\nRole: planner(m)\n\n"
-           "Co-authored-by: Kilo worker(m)\n")
+           "Co-authored-by: goose worker(m)\n")
     p = run_guard("--guard", "commit-trailer", "--message", msg)
     assert p.returncode == 2
     assert "multiple Role" in p.stderr
 
 
 def test_commit_trailer_red_trailer_disagrees_with_role_line():
-    msg = ("fix\n\nRole: worker(m)\n\nCo-authored-by: Kilo planner(m)\n")
+    msg = ("fix\n\nRole: worker(m)\n\nCo-authored-by: goose planner(m)\n")
     assert run_guard("--guard", "commit-trailer", "--message", msg).returncode == 2
 
 
 def test_commit_trailer_red_model_mismatch_vs_role_arg():
-    msg = ("fix\n\nRole: worker(v2)\n\nCo-authored-by: Kilo worker(v2)\n")
+    msg = ("fix\n\nRole: worker(v2)\n\nCo-authored-by: goose worker(v2)\n")
     p = run_guard("--guard", "commit-trailer", "--role", "worker(v1)",
                   "--message", msg)
     assert p.returncode == 2
@@ -326,7 +326,7 @@ def test_packet_hash_red_malformed_manifest(tmp_path):
 # It was untested (reviewer 20261019_16 critique 3, reviewer 20261020_1).
 
 _OK_MSG = "subject line\n\nbody\n\nRole: worker(deepseek-v4.1-flash)\n"
-_OK_FILE = _OK_MSG + "\nCo-authored-by: Kilo worker(deepseek-v4.1-flash)\n"
+_OK_FILE = _OK_MSG + "\nCo-authored-by: goose worker(deepseek-v4.1-flash)\n"
 
 
 def test_commit_trailer_green_via_message_file(tmp_path):
@@ -378,7 +378,7 @@ def test_tw_commit_requires_role_arg_before_guards():
     )
     assert p.returncode == 2
     assert "role argument" in (p.stderr + p.stdout)
-    assert "Co-authored-by: Kilo unspecified" not in (p.stderr + p.stdout)
+    assert "Co-authored-by: goose unspecified" not in (p.stderr + p.stdout)
     # the guard's generic text must NOT be what the user sees (Hazard 2:
     # the error must name the real cause)
     assert "missing 'Role:" not in (p.stderr + p.stdout)

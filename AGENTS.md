@@ -65,13 +65,17 @@ file; it is prefix-stable and cacheable. The canonical files are
 version-controlled and travel with the clone — the workflow does not
 assume any particular agent host.
 
-**Host adapters.** An agent host that auto-loads role files from its own
-private directory (Kilo: `.kilo/agent/<role>.md`) gets a **thin pointer
-adapter** there — a pointer to the canonical file, never a copy. Adapter
-directories are gitignored host state, like the rest of the host's local
-configuration. The same pattern applies to any other host (a system prompt
-snippet, a launcher, a `CLAUDE.md`-style entry point): point at
-`roles/<role>.md`; do not duplicate it. Three things stay true and must
+**Host adapters.** An agent host that discovers agent files from its own
+private directory (goose: `.agents/agents/<role>.md`, a custom agent with
+a `name:` frontmatter; global agents live at `~/.agents/agents/`) gets a
+**thin pointer adapter** there — a pointer to the canonical file, never a
+copy. goose reads `AGENTS.md` itself as a context file
+(`CONTEXT_FILE_NAMES` defaults to `["AGENTS.md", ".goosehints"]`), so only
+`roles/<role>.md` needs the pointer. Adapter directories are gitignored
+host state, like the rest of the host's local configuration. The same
+pattern applies to any other host (a system prompt snippet, a launcher, a
+`CLAUDE.md`-style entry point): point at `roles/<role>.md`; do not
+duplicate it. Three things stay true and must
 not be "cleaned up":
 
 - **This file (AGENTS.md) remains the authoritative protocol.** Any rule
@@ -230,7 +234,7 @@ Every commit message carries **both** trailers (the owner's convention):
 - a `Role: <role>(<model>)` line in the message body — the machine-readable
   role attribution, so *who produced* each commit is recoverable from
   `git log` alone;
-- a final `Co-authored-by: Kilo <role>(<model>)` trailer — the signature,
+- a final `Co-authored-by: goose <role>(<model>)` trailer — the signature,
   recording the agent and the model that did the work.
 
 The two must **agree** (same role, same model): the `commit-trailer` guard

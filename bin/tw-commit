@@ -8,7 +8,7 @@
 # the commit-trailer guard cross-checks it against the second argument.
 #
 # The role argument is REQUIRED and checked HERE, before any guard runs. The
-# former 'Co-authored-by: Kilo unspecified' fallback could never satisfy the
+# former 'Co-authored-by: <host> unspecified' fallback could never satisfy the
 # commit-trailer guard, so a roleless invocation always died with the guard's
 # generic 'missing Role line' text, which names the wrong cause (Hazard 8/11:
 # a dead fallback whose failure mode misreports itself).
@@ -34,7 +34,7 @@ if [ "$#" -lt 2 ] || [ -z "${2:-}" ]; then
   exit 2
 fi
 ROLE="$2"
-SIGNATURE="Co-authored-by: Kilo $ROLE"
+SIGNATURE="Co-authored-by: goose $ROLE"
 
 FULL="$(mktemp)"
 trap 'rm -f "$FULL"' EXIT

@@ -9,5 +9,5 @@ __pycache__/
 .pytest_cache/
 
 # Adopting projects: gitignore YOUR host's private adapter directory if it
-# is not the committed example (this template ships .kilo/agent/*.md as
+# is not the committed example (this template ships .agents/agents/*.md as
 # committed example adapters — see README §3).

@@ -56,7 +56,7 @@ CHANNELS = (
 
 ROLE_RE = re.compile(r"^Role:\s*([A-Za-z0-9_.\-]+)\(([^)]+)\)\s*$", re.M)
 COAUTHOR_RE = re.compile(
-    r"^Co-authored-by:\s*Kilo\s+([A-Za-z0-9_.\-]+)\(([^)]+)\)\s*$", re.M
+    r"^Co-authored-by:\s*goose\s+([A-Za-z0-9_.\-]+)\(([^)]+)\)\s*$", re.M
 )
 PACKET_MARKER = "# review-diff packaging (reviewer input)"
 PACKET_DIFF_HEADER = "## git diff"
@@ -111,7 +111,7 @@ def guard_commit_trailer(args) -> int:
     """Trailer parser (AGENTS.md §2.5, §2.10 rule 5).
 
     Requires exactly ONE 'Role: <role>(<model>)' line in the message body and
-    the 'Co-authored-by: Kilo <role>(<model>)' trailer; if --role is given, the
+    the 'Co-authored-by: goose <role>(<model>)' trailer; if --role is given, the
     declared role must match. Duplicate/ambiguous Role lines exit 2. This is
     accident-detection (see module docstring), not authorization.
     """
@@ -155,7 +155,7 @@ def guard_commit_trailer(args) -> int:
     if not coa:
         return _fail(
             "commit-trailer",
-            "missing 'Co-authored-by: Kilo <role>(<model>)' trailer -- "
+            "missing 'Co-authored-by: goose <role>(<model>)' trailer -- "
             "commit via bin/tw-commit (§2.5)",
         )
     if coa[0] != (role, model):
