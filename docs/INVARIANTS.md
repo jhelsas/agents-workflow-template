@@ -2,7 +2,7 @@
 
 > **Purpose.** Each entry is a contract the implementation is *supposed*
 > to satisfy, with an executable witness that asserts the contract (not the
-> current behaviour). This file is the reference the reviewer gates against
+> current behaviour). This file is the reference the diff reviewer gates against
 > and the worker implements toward. It exists because prose contracts with
 > no executable witness drift silently.
 >

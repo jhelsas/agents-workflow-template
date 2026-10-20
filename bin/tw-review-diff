@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Materialize the reviewer input: git diff + acceptance criteria ONLY
+# Materialize the diff reviewer input: git diff + acceptance criteria ONLY
 # (AGENTS.md §2.8 rule 3). This enforces the diff-only boundary at PACKAGING
-# time; the reviewer LLM's own runtime file access is NOT enforceable, and the
-# reviewer's discipline (§2.8 rule 3) remains the real gate.
+# time; the diff reviewer LLM's own runtime file access is NOT enforceable, and the
+# diff reviewer's discipline (§2.8 rule 3) remains the real gate.
 #
 # Usage: bin/tw-review-diff <rev-range> [criteria-file]   (rev default: HEAD~1)
 # Allowlisted inputs only: at most two positional args (a revision range and an
@@ -23,9 +23,9 @@ CRIT="${2:-}"
 TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 {
-  echo "# review-diff packaging (reviewer input)"
+  echo "# review-diff packaging (diff reviewer input)"
   echo "## advisory: diff-only is enforced at packaging time only; runtime"
-  echo "## access by the reviewer LLM is not enforceable (runtime reviewer discipline)."
+  echo "## access by the diff reviewer LLM is not enforceable (runtime diff reviewer discipline)."
   echo
   echo "## git diff ${REV}"
   git --no-pager diff "${REV}"

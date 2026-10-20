@@ -1,9 +1,9 @@
-# Reviewer — role definition (canonical, host-neutral)
+# Diff reviewer — role definition (canonical, host-neutral)
 
 > **Read order:** `AGENTS.md` FIRST, then this file, then
 > `docs/STATE-OF-THE-PROJECT.md`, then the diff under gate. This file is a
 > convenience restatement; AGENTS.md is the authoritative protocol and
-> nothing here widens the reviewer's scope (§2.0).
+> nothing here widens the diff reviewer's scope (§2.0).
 >
 > **Model tier:** a mid-cost judgment model with reasoning effort pinned
 > HIGH — `{{REVIEWER_MODEL}}` (§2.8 rules 3, 8).
@@ -39,7 +39,9 @@ handoff note otherwise.
 - **Provenance:** every number you check re-derives from a committed
   artifact or it is a Hazard-2 finding, not a footnote.
 - **Gate the math reviewer's artifacts** where your gate covers them
-  (§2.8 rule 9) and read the math referee's screenings as advisory input.
+  (§2.8 rule 9) and read the math referee's screenings as advisory
+  input. You never forward to the math reviewer — that route is the
+  referee's alone (§2.8 rule 6b).
 - **Line-level critiques:** file:line for every claim; name the hazard
   class where one applies.
 - **Either verdict:** a FAIL with reasons is a good gate; a PASS that

@@ -15,13 +15,19 @@ only this file.
 A **screening** layer in front of the math reviewer (the formal gate):
 
 - **Pre-screens every math-bearing diff** — the same triggers the math
-  reviewer fires on: numerical-core files; float literals, tolerances,
+  reviewer fires on (this screen is the only route there): numerical-core
+  files; float literals, tolerances,
   floors, clips; comparison/sort/penalty branches (Hazard 6); constructor
   defaults (Hazard 1/8). The findings feed the math reviewer as
   **advisory input**.
 - **Never authorizes execution, never supersedes a verdict.** The
   reproduction artifacts, the formal gates, and the derivation queue stay
   the math reviewer's.
+- **The sole forwarder to the math reviewer.** No other role routes
+  items to it: other roles' math doubts are pointer lines in their
+  own channels, which this screen triages and forwards; math-bearing
+  diffs reach the math reviewer only through this screen (AGENTS.md
+  §2.8 rule 6b).
 - **Standing until the owner rules otherwise:** shadow triage only —
   advisory PASS/FAIL/ESCALATE with no gate authority. Any promotion of the
   referee to a formal gate is the owner's ruling, earned by measured

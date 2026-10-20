@@ -58,7 +58,7 @@ ROLE_RE = re.compile(r"^Role:\s*([A-Za-z0-9_.\-]+)\(([^)]+)\)\s*$", re.M)
 COAUTHOR_RE = re.compile(
     r"^Co-authored-by:\s*goose\s+([A-Za-z0-9_.\-]+)\(([^)]+)\)\s*$", re.M
 )
-PACKET_MARKER = "# review-diff packaging (reviewer input)"
+PACKET_MARKER = "# review-diff packaging (diff reviewer input)"
 PACKET_DIFF_HEADER = "## git diff"
 
 BYPASS_ENV = "TW_GUARDS_BYPASS"
@@ -231,7 +231,7 @@ def guard_append_only(args) -> int:
 def guard_review_diff(args) -> int:
     """Enforce the diff-only boundary at the PACKAGING level.
 
-    The only place the invariant is enforceable: the reviewer LLM's own file
+    The only place the invariant is enforceable: the diff reviewer LLM's own file
     tools cannot be constrained at runtime (a packaging-time bound, not a runtime one).
     Validates that the input is a packet produced by bin/tw-review-diff
     (diff + criteria only) -- no content sniffing, only the packet header.
@@ -244,7 +244,7 @@ def guard_review_diff(args) -> int:
         return _fail(
             "review-diff",
             "input is not a packaged review (diff + criteria only) -- do not "
-            "hand the reviewer a codebase dump; produce it with "
+            "hand the diff reviewer a codebase dump; produce it with "
             "bin/tw-review-diff",
         )
     return _pass("review-diff", "diff + criteria only")
@@ -327,7 +327,7 @@ def guard_packet_hash(args) -> int:
 # NOTE: a 'planner_no_execute' guard (proposed in the origin project, 2026-10-19)
 # is DROPPED: asserting a substring of the planner's output proves nothing
 # about execution and risks blocking legitimate output formats (Hazard 11;
-# reviewer 20261019_3, critique 3).
+# diff reviewer 20261019_3, critique 3).
 GUARDS = {
     "ping": guard_ping,
     "commit-trailer": guard_commit_trailer,

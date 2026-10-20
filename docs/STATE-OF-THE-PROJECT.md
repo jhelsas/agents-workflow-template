@@ -50,7 +50,7 @@ Later goals must not be pursued by weakening earlier ones.
 | channel | owner |
 |---|---|
 | `SPEC.md` / `docs/STATE-OF-THE-PROJECT.md` / `docs/BACKLOG.md` | planner |
-| `docs/REVIEW_LOG.md` / `docs/IDEAS-REVIEWER.md` | reviewer |
+| `docs/REVIEW_LOG.md` / `docs/IDEAS-REVIEWER.md` | diff reviewer |
 | `docs/WORKER_LOG.md` | worker |
 | `ADVISOR_NOTES.md` / `docs/IDEAS-ADVISOR.md` | advisor |
 | `docs/INVARIANTS.md` | owner-approved entries |

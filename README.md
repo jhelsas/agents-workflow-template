@@ -19,16 +19,16 @@ The folder mirrors the **root of an adopting project**. Copy everything
 | **owner** | human | rules, arbitrates, approves invariants and scope | — |
 | **planner** | strong model, high effort | compiles `SPEC.md` rounds, owns STATE/BACKLOG, terminates after compile | executes, gates, chats |
 | **worker** | cheap model | the TDD loop: implementation, tests, data crunching, reports | compiles specs, gates |
-| **reviewer** | mid model, high effort | batched PASS/FAIL gates on committed diffs only | reads the whole codebase, commits others' work |
+| **diff reviewer** | mid model, high effort | batched PASS/FAIL gates on committed diffs only | reads the whole codebase, commits others' work |
 | **advisor** | cheap model | interactive Q&A, sanity checks, data verification | compiles, gates, executes |
-| **math reviewer** (opt.) | strongest model | formal math gate: derivations, floors, tolerances, update rules | writes outside its workspace |
-| **math referee** (opt.) | cheap model | low-cost math pre-screen (PASS/FAIL/ESCALATE), advisory only | authorizes anything |
+| **math reviewer** (opt.) | strongest model | formal math gate: derivations, floors, tolerances, update rules; **reached only via the math referee** (§2.8 rules 6a/6b) | writes outside its workspace |
+| **math referee** (opt.) | cheap model | low-cost math pre-screen (PASS/FAIL/ESCALATE), advisory only; **the sole forwarder to the math reviewer** (§2.8 rule 6b) | authorizes anything |
 
 **The loop:** owner states goals → planner compiles a round of milestones
 into `SPEC.md` (each with exact files + exact test command + task
 decomposition) → worker executes milestones one at a time under the TDD
 protocol, appending to `WORKER_LOG` and committing each deliverable →
-reviewer gates the batched committed diffs at round close → findings go back
+diff reviewer gates the batched committed diffs at round close → findings go back
 to the planner via `REVIEW_LOG` → repeat. The advisor answers questions on
 demand. The owner rules at every escalation.
 
@@ -54,26 +54,26 @@ agent-workflow-template/
 ├── README.md                    ← this guide (do not copy into the project)
 ├── AGENTS.md                    ← the operating manual (the protocol)
 ├── SPEC.md                      ← the milestone register (planner-owned)
-├── ADVISOR_NOTES.md             ← advisor → planner/reviewer channel
+├── ADVISOR_NOTES.md             ← advisor → planner/diff reviewer channel
 ├── bin/
 │   ├── tw-test                  ← targeted test wrapper (env prefix + --lf guard)
 │   ├── tw-suite                 ← full-suite pre-commit gate
 │   ├── tw-commit                ← commit wrapper (identity + trailers + guards)
-│   └── tw-review-diff           ← reviewer packet packager (diff + criteria only)
+│   └── tw-review-diff           ← diff reviewer packet packager (diff + criteria only)
 ├── tools/
 │   └── protocol_guards.py       ← the executable protocol guards (AGENTS.md §2.15)
 ├── tests/
 │   └── test_protocol_guards.py  ← hermetic guard tests (keep green)
 ├── .gitignore                   ← guard/host-local state (.tw_last_failure, .tw_guards.log)
 ├── roles/                      ← the six canonical role definitions (host-neutral)
-│   ├── worker.md  reviewer.md  advisor.md  planner.md
+│   ├── worker.md  diff-reviewer.md  advisor.md  planner.md
 │   └── math-reviewer.md  math-referee.md  (the optional math pair)
 ├── .agents/agents/             ← example host adapters (goose) — pointers to roles/
 ├── docs/
 │   ├── STATE-OF-THE-PROJECT.md  ← the situation report (read FIRST)
-│   ├── REVIEW_LOG.md            ← reviewer → planner channel
-│   ├── WORKER_LOG.md            ← worker → reviewer channel
-│   ├── IDEAS-REVIEWER.md        ← reviewer-owned untested ideas
+│   ├── REVIEW_LOG.md            ← diff reviewer → planner channel
+│   ├── WORKER_LOG.md            ← worker → diff reviewer channel
+│   ├── IDEAS-REVIEWER.md        ← diff reviewer-owned untested ideas
 │   ├── IDEAS-ADVISOR.md         ← advisor-owned untested ideas
 │   ├── BACKLOG.md               ← deferred register + write-off list
 │   ├── INVARIANTS.md            ← the contract register (executable witnesses)
@@ -129,7 +129,7 @@ ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the four
 8. **Have the planner compile Round 1** into `SPEC.md` from the owner's
    goals, using the milestone format verbatim (AGENTS.md §2.6).
 9. **Run one cheap milestone end-to-end** (worker → commit → WORKER_LOG →
-   reviewer gate → REVIEW_LOG) before trusting the loop with real work.
+   diff reviewer gate → REVIEW_LOG) before trusting the loop with real work.
 
 ## 4. Placeholders
 
@@ -155,14 +155,14 @@ the role definitions.
    across cycles — the measured cost lever in the origin project.
 2. **Single owner per file.** Two writers to one file produced a real
    ownership incident; the rule is now absolute.
-3. **Diff-only, batched review.** The reviewer's cost was 98% input reads at
+3. **Diff-only, batched review.** The diff reviewer's cost was 98% input reads at
    a ~950:1 read:output ratio before this rule; it reviews `git diff` +
    acceptance criteria, once per completed milestone batch.
 4. **The planner never ingests raw data.** The worker summarizes; the
    planner compiles. A cached planner token cost 42× a worker token.
 5. **Compaction on a schedule.** Channels grow by append and are compacted
    (closed rounds → one-line summary entries) at ~50k tokens, witnessed by
-   another role and gated by the reviewer, so nothing open is ever lost.
+   another role and gated by the diff reviewer, so nothing open is ever lost.
 6. **Every protocol rule traces to an incident.** Rules without a recorded
    failure mode get ignored; rules with one get followed.
 

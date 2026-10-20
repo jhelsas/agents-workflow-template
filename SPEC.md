@@ -1,7 +1,7 @@
 # SPEC.md — the milestone register
 
 > **Owner:** the planner. This file is the planner→worker channel: the
-> current milestone list, compiled from the owner's goals, the reviewer's
+> current milestone list, compiled from the owner's goals, the diff reviewer's
 > gate findings (REVIEW_LOG), the advisor's findings, and the BACKLOG
 > graduations. The worker executes it verbatim; nobody else writes it.
 >
@@ -9,7 +9,7 @@
 > blocks below (one line per milestone: number, status, commit, one-line
 > outcome). **Open milestones, pending decisions, and the active round stay
 > verbatim.** Full text: `git log SPEC.md`. The worker witnesses each
-> compaction block against the record at resume; the reviewer gates the
+> compaction block against the record at resume; the diff reviewer gates the
 > witness verdict.
 
 ---
@@ -33,7 +33,7 @@ recorded reason.
 
 # Round 3 — {{TITLE}} (ACTIVE — the template)
 
-**Source:** the owner's {{DATE}} directive, the reviewer's Round-2 batched
+**Source:** the owner's {{DATE}} directive, the diff reviewer's Round-2 batched
 gate (REVIEW_LOG {{commit}}), the advisor's Finding {{N}}.
 
 **The state at compile ({{DATE}}):** one paragraph — what is done, what the

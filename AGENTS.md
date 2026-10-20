@@ -57,7 +57,7 @@ repository. They are not optional.
 ### 2.0 The role definition files
 
 Each role has a dedicated **canonical** definition file under
-`roles/<role>.md` — `worker`, `reviewer`, `advisor`, `planner`,
+`roles/<role>.md` — `worker`, `diff-reviewer`, `advisor`, `planner`,
 `math-reviewer`, `math-referee` — mirroring this protocol with the role's
 read order, writes, wrappers, and discipline. **If you are running as one
 of these roles, read your definition file FIRST**, immediately after this
@@ -278,7 +278,7 @@ carry, where applicable:
   revision, CLI, config, result files) so the log-completeness gate holds.
 
 A milestone compiled without the decomposition, where the norm applies, is
-an incomplete compile — the reviewer may gate it back to the planner on that
+an incomplete compile — the diff reviewer may gate it back to the planner on that
 basis alone.
 
 ### 2.7 When *not* to use the Part 1 protocol
@@ -300,17 +300,17 @@ research workflow, not the TDD loop.
 ### 2.8 Agent cost protocol
 
 This project runs a multi-role workflow (owner / planner / worker /
-reviewer / advisor, plus the optional math pair). The measured cost levers,
+diff reviewer / advisor, plus the optional math pair). The measured cost levers,
 from the origin project's usage audit:
 
 - **Rate asymmetry:** a cached planner token can cost 40× a cached worker
-  token; a reviewer token ~12×. Prompt trimming and input discipline on the
+  token; a diff reviewer token ~12×. Prompt trimming and input discipline on the
   judgment roles is the highest-leverage cost work.
 - **Reasoning runaways:** unbounded reasoning under a "max" default effort
   burned the single largest worker cost line. Pin reasoning effort
   explicitly for every role (rule 8) and route runaway-prone work to
   non-reasoning models.
-- **Review read overhead:** a reviewer fed the codebase spent 98% of its
+- **Review read overhead:** a diff reviewer fed the codebase spent 98% of its
   cost on input reads at a ~950:1 read:output ratio. Diff-only ingestion
   (rule 3) is the fix.
 
@@ -333,10 +333,10 @@ Rules for all agents:
    | `SPEC.md` | planner | the milestone register (planner → worker) |
    | `docs/STATE-OF-THE-PROJECT.md` | planner | the situation report |
    | `docs/BACKLOG.md` | planner | deferred items + write-offs |
-   | `docs/REVIEW_LOG.md` | reviewer | reviewer → planner (gate verdicts) |
-   | `docs/WORKER_LOG.md` | worker | worker → reviewer (handoffs) |
-   | `ADVISOR_NOTES.md` | advisor | advisor → planner/reviewer (findings) |
-   | `docs/IDEAS-REVIEWER.md` | reviewer | reviewer's untested ideas |
+   | `docs/REVIEW_LOG.md` | diff reviewer | diff reviewer → planner (gate verdicts) |
+   | `docs/WORKER_LOG.md` | worker | worker → diff reviewer (handoffs) |
+   | `ADVISOR_NOTES.md` | advisor | advisor → planner/diff reviewer (findings) |
+   | `docs/IDEAS-REVIEWER.md` | diff reviewer | diff reviewer's untested ideas |
    | `docs/IDEAS-ADVISOR.md` | advisor | advisor's untested ideas |
    | `docs/INVARIANTS.md` | owner-approved | the contract register |
    | `math/MATH-REVIEW.md` (opt.) | math reviewer | the formal math channel |
@@ -348,7 +348,7 @@ Rules for all agents:
    referenced from the stable files, never edited. When a channel exceeds
    ~50k tokens, compact it (§2.13).
 
-3. **Reviewer: diff-only ingestion, batched gates.** The reviewer must NOT
+3. **Diff reviewer: diff-only ingestion, batched gates.** The diff reviewer must NOT
    be fed the full codebase, broad file trees, or large test logs — only
    the `git diff` + the milestone's acceptance criteria, returning a binary
    PASS/FAIL with line-level critiques. Trigger **once per completed
@@ -373,7 +373,7 @@ Rules for all agents:
    questions, sanity checks, hypothesis exploration, and data checks. It
    answers and verifies; it does NOT compile SPEC.md, run PASS/FAIL gates,
    or execute the TDD loop — and it obeys the provenance rules. Do NOT
-   route interactive Q&A to the planner or reviewer.
+   route interactive Q&A to the planner or diff reviewer.
 
 6a. **Math Reviewer (optional; math-heavy projects): the formal math gate.**
     Pre-execution checks of every SPEC compile carrying a formula,
@@ -382,12 +382,22 @@ Rules for all agents:
     its own workspace; everything else reaches the tree as *proposals*.
     Casual math Q&A goes to the advisor, not the math reviewer.
 
+    **The sole route to the math reviewer is the math referee (rule 6b):**
+    no other role forwards to it directly. Other roles' math doubts
+    become one-line pointers in their own channels (never writes
+    into `math/`), which the referee triages and forwards when
+    warranted.
+
 6b. **Math Referee (optional): the low-cost math screen.** A screening
     layer in front of the math reviewer: pre-screens math-bearing diffs,
     returns PASS / FAIL / ESCALATE with risk class, cited equations, and a
     falsifiable witness — **advisory only**; it never authorizes execution
-    and never downgrades a mandatory escalation. Formal gate authority
-    stays with the math reviewer unless the owner rules otherwise.
+    and never downgrades a mandatory escalation. **It is the sole
+    forwarder to the math reviewer:** every item — a pointer-channel
+    math doubt, a derivation-queue entry, a math-bearing diff —
+    reaches the math reviewer only through this screen; no other
+    role routes items there. Formal gate authority stays with the
+    math reviewer unless the owner rules otherwise.
 
 7. **Prefix stability for KV cache reuse.** Keep static context at the top
    of the prompt (`AGENTS.md` → `SPEC.md` → `STATE` → active task). Avoid
@@ -397,7 +407,7 @@ Rules for all agents:
    to `max` reasoning make runaway reasoning the dominant cost line. Every
    role's session configuration must set it explicitly — `low`/`medium` for
    routine execution (worker, advisor), `high` for judgment roles
-   (planner, reviewer, math pair) — and never rely on the provider default.
+   (planner, diff reviewer, math pair) — and never rely on the provider default.
 
 9. **Model routing is scoped by diff, not by project.** The routing
    decision is made on the `git diff` under review:
@@ -408,8 +418,10 @@ Rules for all agents:
      verification* may be routed to the strongest available model.
      Generation stays on the worker.
    - **Escalate review of core-math diffs:** if a diff touches
-     update-rule/numerical-core code, the math reviewer supplies the second
-     pass on that diff alone — diff-only, so the cost stays bounded.
+     update-rule/numerical-core code, it is routed through the math
+     referee, which forwards it to the math reviewer for the second
+     pass on that diff alone (the referee is the only route to the
+     math reviewer — rule 6b) — diff-only, so the cost stays bounded.
    - **Diff classification heuristic (the cheap routing signal).** A ~50-line
      check on the diff decides escalation: (a) edits under the numerical
      core; (b) adds/edits a float literal, tolerance, floor, or clip; (c)
@@ -424,7 +436,7 @@ Rules for all agents:
 
 When the owner requests a **line-by-line itemization** (or an equivalent
 deep-read deliverable), the planner does **not** perform the deep read
-(§2.8 rule 4) and the reviewer is **not** fed the codebase (§2.8 rule 3).
+(§2.8 rule 4) and the diff reviewer is **not** fed the codebase (§2.8 rule 3).
 Instead:
 
 1. **Planner emits the instruction set, not the itemization** — what to
@@ -434,7 +446,7 @@ Instead:
 2. **The worker performs the deep read and produces the itemization**,
    resolving exact locations and running the verification probes with
    empirical evidence per item.
-3. **The reviewer gates the findings, diff-only** — the worker's report +
+3. **The diff reviewer gates the findings, diff-only** — the worker's report +
    triage table + committed pins, not the codebase.
 
 This keeps the expensive roles on judgment, not ingestion.
@@ -448,8 +460,8 @@ This keeps the expensive roles on judgment, not ingestion.
    channel, or (b) an explicit "work in progress, do not touch `<paths>`"
    reservation. Downstream roles must check `git status` and the latest
    handoff note before acting on another role's files.
-3. **The reviewer gates on committed diffs only.** If the material to gate
-   is uncommitted, the reviewer waits for the worker's handoff note; it
+3. **The diff reviewer gates on committed diffs only.** If the material to gate
+   is uncommitted, the diff reviewer waits for the worker's handoff note; it
    does not commit on the worker's behalf to make the diff exist.
 4. **One deliverable, one commit, one owner.** Edits to a deliverable are
    returned to the author role to commit, not committed by the editor.
@@ -503,7 +515,7 @@ compaction is **scheduled, not only triggered**:
    another role witnesses the summary block against the record (every claim
    cites a commit that exists; superseded content marked, never deleted; no
    open milestone or pending decision lost; statuses match the artifacts),
-   and the reviewer gates the witness verdict.
+   and the diff reviewer gates the witness verdict.
 3. **What compacts:** closed milestones/rounds collapse into a summary
    block (one line per milestone: number, status, commit, one-line
    outcome); **open milestones, pending decisions, and the active round
@@ -520,13 +532,13 @@ exemption is recorded to `.tw_guards.log` (§2.15).
 ### 2.14 Extended-work scheduling
 
 When the owner announces an absence and asks for **extended work**, the
-reviewer dimensions the queued milestone set to the stated duration and
+diff reviewer dimensions the queued milestone set to the stated duration and
 hands the planner a compile input; the planner compiles it into `SPEC.md`
 as one round. The queue runs **quickest-first**, so a partial run leaves a
 closed, committable deliverable at every stop. Each milestone is
 independently committable and independently gated; the worker proceeds
 autonomously through the ladder and **stops at the owner's return**. The
-reviewer batches the gates at batch close.
+diff reviewer batches the gates at batch close.
 
 ### 2.15 Executable protocol guards (wrapper-level accident detection)
 
@@ -541,9 +553,9 @@ wiring. The closed guard set:
 | `ping` | CLI/tests only | wiring smoke — the module imports and answers |
 | `commit-trailer` | `bin/tw-commit` | missing/duplicated/disagreeing `Role:` vs `Co-authored-by:` trailers; `--role` vs message cross-check; `--message`/`--message-file` conflict |
 | `append-only` | `bin/tw-commit` | deletion of channel lines (§2.8 rule 2) in the staged diff |
-| `review-diff` | `bin/tw-review-diff` | a reviewer packet that is not diff + acceptance criteria (§2.8 rule 3) |
+| `review-diff` | `bin/tw-review-diff` | a diff reviewer packet that is not diff + acceptance criteria (§2.8 rule 3) |
 | `lf` | `bin/tw-test` | `--lf` with no recorded failure (Part 1 step 4) |
-| `packet-hash` | `bin/tw-commit` | a frozen reviewer packet that drifted from its recorded hash (`TW_PACKET_MANIFEST`) |
+| `packet-hash` | `bin/tw-commit` | a frozen diff reviewer packet that drifted from its recorded hash (`TW_PACKET_MANIFEST`) |
 
 **Scope — read before trusting the guards.** They are wrapper-level
 **accident detection**, not authorization: the caller self-declares its
@@ -597,7 +609,7 @@ in `tools/protocol_guards.py` if your channel set differs from the ten in
 bin/tw-suite                       # the full-suite pre-commit gate (baseline: STATE §7)
 bin/tw-test <node>                 # targeted tests, env prefix baked in; --lf is guarded
 bin/tw-commit "<message>" "<role(model)>"   # identity + trailers + guards (role REQUIRED)
-bin/tw-review-diff <rev-range> [crit.md]   # the reviewer packet: diff + criteria ONLY
+bin/tw-review-diff <rev-range> [crit.md]   # the diff reviewer packet: diff + criteria ONLY
 
 python3 tools/protocol_guards.py --guard ping   # wiring smoke (guard set: §2.15)
 

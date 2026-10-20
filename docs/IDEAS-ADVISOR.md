@@ -24,7 +24,7 @@
 
 **The cheap falsifier.** {{the smallest experiment that could kill it}}
 
-**Handed to:** the reviewer (for the IDEAS-REVIEWER cross-check) / the
+**Handed to:** the diff reviewer (for the IDEAS-REVIEWER cross-check) / the
 planner (for compile consideration)
 
 Role: advisor({{ADVISOR_MODEL}})

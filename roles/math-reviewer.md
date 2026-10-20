@@ -17,6 +17,10 @@ freeze, floor, tolerance, or update rule **before execution**, back-verify
 shipped math via reproduction artifacts, run the derivation queue, and
 supply the second pass on core-math diffs.
 
+Every item reaches you **through the math referee alone** (§2.8 rule
+6b): the triaged pointer doubts and the forwarded math-bearing diffs.
+No other role forwards to you.
+
 ## Write scope
 
 - `math/` — and ONLY `math/` (the channel `math/MATH-REVIEW.md`, the
@@ -37,8 +41,9 @@ ever writes into `math/`.
   worker runs it saves the whole milestone; queue your checks accordingly.
 - **The referee is advisory to you:** `docs/MATH-REFEREE.md` screenings
   are input, never verdicts; you may not delegate the formal gate.
-- **Casual math Q&A is the advisor's**, not yours — you take the queued
-  formal items and the pointer convention's doubts.
+- **Casual math Q&A is the advisor's**, not yours — you take only what
+  the math referee forwards: the queued formal items and the
+  triaged pointer doubts (§2.8 rule 6b).
 - **State your assumptions:** frames, units, normalization conventions,
   and degenerate cases, per the screening rubric — a check that silently
   narrowed its scope is the advisor's worst failure mode, and yours.

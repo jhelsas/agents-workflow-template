@@ -1,14 +1,14 @@
-# IDEAS — reviewer-owned hypotheses and untested ideas
+# IDEAS — diff reviewer-owned hypotheses and untested ideas
 
-> **Owner.** Reviewer. This is the reviewer's append-only channel for
+> **Owner.** Diff reviewer. This is the diff reviewer's append-only channel for
 > hypotheses, untested ideas, and parked discussions that are **not active
-> work**. Each dated entry carries the reviewer's `Role:` trailer.
+> work**. Each dated entry carries the diff reviewer's `Role:` trailer.
 >
 > **Contract.** Append-only; dated sections. An idea **graduates out** of
 > this file when it becomes a milestone — the planner compiles it into
 > `SPEC.md`, and the entry here gains a `Graduated to M<n>` line (the full
 > text stays here). Graduation lines and compaction of existing entries are
-> reviewer-only writes. Corrections are new entries that supersede, never
+> diff reviewer-only writes. Corrections are new entries that supersede, never
 > edits.
 >
 > **Relationship to the tested record:** tested hypotheses and their
@@ -35,9 +35,9 @@ the record (provenance rules apply to these numbers too)}}
 **The cheap falsifier first.** {{the smallest experiment that could kill
 the idea — propose it before any implementation}}
 
-Role: reviewer({{REVIEWER_MODEL}})
+Role: diff-reviewer({{REVIEWER_MODEL}})
 ```
 
 <!-- A graduated entry gains: **Graduated to M<n>** (SPEC Round {{N}}).
-     Compaction: the reviewer collapses graduated and refuted entries to one
+     Compaction: the diff reviewer collapses graduated and refuted entries to one
      line each past ~50k tokens; witnessed; gated. -->

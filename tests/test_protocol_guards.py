@@ -191,10 +191,10 @@ def test_append_only_compaction_exempt_and_logged(tmp_path):
     subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True)
     p = run_guard("--guard", "append-only", "--repo", str(tmp_path),
                   env={"TW_COMPACTION": "1",
-                       "TW_COMPACTION_REASON": "reviewer-witnessed compaction"})
+                       "TW_COMPACTION_REASON": "compaction, reviewer-witnessed"})
     assert p.returncode == 0
     log = (tmp_path / ".tw_guards.log").read_text()
-    assert "TW_COMPACTION=1" in log and "reviewer-witnessed compaction" in log
+    assert "TW_COMPACTION=1" in log and "compaction, reviewer-witnessed" in log
     assert "docs/REVIEW_LOG.md" in log  # touched-paths field is recorded
 
 
@@ -211,7 +211,7 @@ def test_append_only_compaction_without_reason_rejected(tmp_path):
 
 def test_review_diff_green_real_packet(tmp_path):
     pkt = tmp_path / "packet.md"
-    pkt.write_text("# review-diff packaging (reviewer input)\n\n"
+    pkt.write_text("# review-diff packaging (diff reviewer input)\n\n"
                    "## git diff HEAD~1\n- x\n")
     assert run_guard("--guard", "review-diff",
                      "--review-input", str(pkt)).returncode == 0
@@ -323,7 +323,7 @@ def test_packet_hash_red_malformed_manifest(tmp_path):
 # The wrapper (bin/tw-commit) invokes the guard as
 #   --guard commit-trailer --role <role> --message-file <tmpfile>
 # so the --message-file path is the one that actually runs in production.
-# It was untested (reviewer 20261019_16 critique 3, reviewer 20261020_1).
+# It was untested (diff reviewer 20261019_16 critique 3, diff reviewer 20261020_1).
 
 _OK_MSG = "subject line\n\nbody\n\nRole: worker(deepseek-v4.1-flash)\n"
 _OK_FILE = _OK_MSG + "\nCo-authored-by: goose worker(deepseek-v4.1-flash)\n"

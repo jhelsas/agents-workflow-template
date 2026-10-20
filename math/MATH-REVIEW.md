@@ -15,11 +15,14 @@
 > owner, INVARIANTS entries owner-approved).
 >
 > **The standing pointer convention.** Whenever any role — worker,
-> reviewer, advisor, planner — has a *doubt* about a derivation, a formula,
-> a numeric freeze, a floor, a tolerance, or an update rule, it **logs a
-> one-line pointer** in its *own* channel ("math item →
-> `math/MATH-REVIEW.md`, the question in one line") so the math reviewer
-> can check it later. Doubts are logged, never silently dropped. Never
+> diff reviewer, advisor, planner — has a *doubt* about a derivation,
+> a formula, a numeric freeze, a floor, a tolerance, or an update
+> rule, it **logs a one-line pointer** in its *own* channel ("math
+> item → the math referee (`docs/MATH-REFEREE.md`), the question in
+> one line") for the math referee to triage. **The math referee is
+> the only role that forwards items to this channel** (AGENTS.md §2.8
+> rule 6b); no other role submits to the math reviewer directly.
+> Doubts are logged, never silently dropped. Never
 > write the pointer into `math/` itself.
 
 ---
@@ -34,7 +37,8 @@
    result — file-first, never a masked pipe).
 3. **The derivation queue** — open mathematical questions, each with its
    falsifiable check.
-4. **The second pass** on core-math diffs, per AGENTS.md §2.8 rule 9.
+4. **The second pass** on core-math diffs — routed to you by the math
+   referee (AGENTS.md §2.8 rules 6b, 9), never submitted directly.
 
 ## Entry format
 

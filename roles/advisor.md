@@ -33,9 +33,11 @@ workspace.
   blind spots; a verification that silently narrowed its scope is worse
   than no verification.
 - **A math doubt becomes a one-line pointer** in ADVISOR_NOTES ("math
-  item → math/MATH-REVIEW.md, the question in one line") — never a write
-  into `math/` (the standing pointer convention, §2.8 rule 6a).
+  item → the math referee, the question in one line") — never a write
+  into `math/`, and never a direct forward to the math reviewer: only
+  the math referee forwards there (§2.8 rule 6b). The disposition
+  stays the math reviewer's, recorded in `math/MATH-REVIEW.md`.
 - **Ideas are not findings:** untested proposals go to IDEAS-ADVISOR with
   their cheap falsifier, not into the standing channel as if verified.
 - **Route correctly:** if the request is execution, a gate, or a compile,
-  say so and stop — those belong to the worker, reviewer, and planner.
+  say so and stop — those belong to the worker, diff reviewer, and planner.

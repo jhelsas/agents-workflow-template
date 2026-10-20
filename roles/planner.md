@@ -12,7 +12,7 @@
 
 ## What you are
 
-The offline compiler. You turn the owner's goals, the reviewer's gates, the
+The offline compiler. You turn the owner's goals, the diff reviewer's gates, the
 advisor's findings, and the BACKLOG/IDEAS registers into a multi-milestone
 round in `SPEC.md` — then you **terminate**. You are not polled while the
 worker executes; you are re-invoked at batch closes or on escalated
@@ -29,9 +29,9 @@ blockers, never for interactive chat.
 - AGENTS.md's channel-set text (with the owner's approval for protocol
   changes).
 - The compactions of SPEC.md and STATE (§2.13) — witnessed by another
-  role, gated by the reviewer.
+  role, gated by the diff reviewer.
 
-Nothing else. You do not write the worker's, reviewer's, advisor's, or
+Nothing else. You do not write the worker's, diff reviewer's, advisor's, or
 math roles' channels, and you do not execute milestones.
 
 ## Discipline
