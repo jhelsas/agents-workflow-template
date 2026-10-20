@@ -2,8 +2,8 @@
 
 A portable multi-agent workflow for **milestone-driven, evidence-gated**
 software and research projects. It is distilled from the operating protocol of
-the originating project (a long-running CEM research prototype); every rule in
-it traces to a measured incident there, not to a hypothetical.
+a long-running research project; every rule in it traces to a measured
+incident, not to a hypothetical.
 
 The folder mirrors the **root of an adopting project**. Copy everything
 (except this README) into your project root and adapt the placeholders.
@@ -135,16 +135,16 @@ ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the four
 
 | placeholder | meaning | example |
 |---|---|---|
-| `{{PROJECT}}` | project name | `tw-cem` |
-| `{{ONE_LINER}}` | one-line description | `CEM optimizer research prototype` |
+| `{{PROJECT}}` | project name | `my-project` |
+| `{{ONE_LINER}}` | one-line description | `a research prototype` |
 | `{{DATE}}` | last-updated date | `2026-10-18` |
 | `{{TEST_CMD}}` | the targeted test command | `bin/tw-test tests/test_x.py -q` |
 | `{{SUITE_CMD}}` | the full-suite gate | `bin/tw-suite` |
 | `{{OWNER_NAME}}` / `{{OWNER_EMAIL}}` | commit identity | — |
 | `{{WORKER_MODEL}}` etc. | per-role model ids | see AGENTS.md §2.8 |
 
-The `tw-` script prefix is heritage from the originating project. Renaming is
-allowed but must be done in one pass: the `bin/` files plus every reference in
+The `tw-` script prefix is arbitrary. Renaming is optional and
+must be done in one pass: the `bin/` files plus every reference in
 AGENTS.md, `tools/protocol_guards.py`, `tests/test_protocol_guards.py`, and
 the role definitions.
 
@@ -165,15 +165,3 @@ the role definitions.
    another role and gated by the diff reviewer, so nothing open is ever lost.
 6. **Every protocol rule traces to an incident.** Rules without a recorded
    failure mode get ignored; rules with one get followed.
-
-## 6. Maintenance
-
-In the origin repo this template lives as a **git submodule** (owner ruling,
-2026-10-19): it travels with the clone without entangling the two histories,
-and the pin is bumped when the origin's protocol evolves. It is refreshed
-periodically from the origin project's lessons — most recently with the
-executable protocol guards (M150/M151 in the origin's numbering:
-`tools/protocol_guards.py`, `bin/tw-review-diff`, the guarded
-`bin/tw-commit`/`bin/tw-test`, and the hermetic guard tests). An adopting
-project copies the tree (except this README) into its root and commits the
-adapted copy.
