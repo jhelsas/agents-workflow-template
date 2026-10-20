@@ -1,0 +1,13 @@
+# Host-local agent / guard state — never commit.
+.tw_last_failure
+.tw_guards.log
+
+# Python test/tooling droppings (the bin/tw-* wrappers disable bytecode
+# and the pytest cache; ignore the leavings anyway).
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Adopting projects: gitignore YOUR host's private adapter directory if it
+# is not the committed example (this template ships .kilo/agent/*.md as
+# committed example adapters — see README §3).

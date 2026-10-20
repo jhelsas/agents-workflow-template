@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Materialize the reviewer input: git diff + acceptance criteria ONLY
+# (AGENTS.md §2.8 rule 3). This enforces the diff-only boundary at PACKAGING
+# time; the reviewer LLM's own runtime file access is NOT enforceable, and the
+# reviewer's discipline (§2.8 rule 3) remains the real gate.
+#
+# Usage: bin/tw-review-diff <rev-range> [criteria-file]   (rev default: HEAD~1)
+# Allowlisted inputs only: at most two positional args (a revision range and an
+# optional criteria file). Any extra argument is refused (exit 2) -- the packet
+# is diff + criteria, nothing else. No content sniffing is performed.
+# The composed packet is self-validated with --guard review-diff before it is
+# emitted (so the guard is actually wired, not a dead check -- Hazard 11).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+if [ "$#" -gt 2 ]; then
+  echo "[review-diff] VIOLATION: too many arguments ($#) -- the packet is" >&2
+  echo "              diff + acceptance criteria only (§2.8 rule 3);" >&2
+  echo "              passed: $*" >&2
+  exit 2
+fi
+REV="${1:-HEAD~1}"
+CRIT="${2:-}"
+TMP="$(mktemp)"
+trap 'rm -f "$TMP"' EXIT
+{
+  echo "# review-diff packaging (reviewer input)"
+  echo "## advisory: diff-only is enforced at packaging time only; runtime"
+  echo "## access by the reviewer LLM is not enforceable (runtime reviewer discipline)."
+  echo
+  echo "## git diff ${REV}"
+  git --no-pager diff "${REV}"
+  if [ -n "$CRIT" ] && [ -f "$CRIT" ]; then
+    echo
+    echo "## acceptance criteria (${CRIT})"
+    cat "$CRIT"
+  fi
+} > "$TMP"
+python3 tools/protocol_guards.py --guard review-diff --review-input "$TMP" >&2
+cat "$TMP"

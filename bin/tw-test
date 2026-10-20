@@ -2,11 +2,26 @@
 # Targeted tests with the project's mandatory environment prefix.
 # Usage: bin/tw-test tests/test_<module>.py -q
 #        bin/tw-test tests/test_<module>.py::test_<node> --lf --tb=short
+#
+# The --lf (last-failed) loop is guarded: it requires a RECORDED failure
+# (AGENTS.md Part 1 step 4), so it cannot be used to skip the baseline run
+# (Part 1 step 2). A failing run writes .tw_last_failure; a passing run
+# clears it. The decision is delegated to tools/protocol_guards.py --guard lf
+# so the rule lives in one place. Override with TW_GUARDS_BYPASS=lf (logged).
+#
 # ADAPT (once, at adoption): set the env vars your project requires —
 # thread pinning for reproducibility, import paths, bytecode/cache
 # isolation. The contract is that NOBODY retypes this prefix by hand
 # (AGENTS.md §2.8 rule 1).
 set -euo pipefail
 cd "$(dirname "$0")/.."
+MARKER=".tw_last_failure"
+
+python3 tools/protocol_guards.py --guard lf --repo . --invocation "$*"
+
+set +e
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=. \
   python -B -m pytest "$@" -p no:cacheprovider
+RC=$?
+if [ "$RC" -ne 0 ]; then : > "$MARKER"; else rm -f "$MARKER"; fi
+exit "$RC"

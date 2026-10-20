@@ -1,26 +1,52 @@
 #!/usr/bin/env bash
-# Commit staged changes with the repo-local identity workaround and the
-# mandatory trailers (AGENTS.md §2.5, §2.10).
-# Usage: bin/tw-commit "commit message" "role(model)"   (message via stdin ok)
+# Commit staged changes with the repo-local identity workaround, the
+# mandatory Co-authored-by + Role trailers (AGENTS.md §2.5, §2.10 rules 1/5),
+# and the runtime protocol guards (tools/protocol_guards.py — §2.15).
+# Usage: bin/tw-commit "commit message" "role(model)"
 #   e.g. bin/tw-commit "M12: the floor fix" "worker({{WORKER_MODEL}})"
-# The message body must already carry its "Role: <role>(<model>)" line —
-# this wrapper appends the Co-authored-by signature, which records the
-# agent, the model, and the host the work ran on.
+# The message MUST also carry a body line 'Role: role(model)' (§2.10 rule 5);
+# the commit-trailer guard cross-checks it against the second argument.
+#
+# The role argument is REQUIRED and checked HERE, before any guard runs. The
+# former 'Co-authored-by: Kilo unspecified' fallback could never satisfy the
+# commit-trailer guard, so a roleless invocation always died with the guard's
+# generic 'missing Role line' text, which names the wrong cause (Hazard 8/11:
+# a dead fallback whose failure mode misreports itself).
+#
+# Only STAGED changes are committed (§2.10): stage your deliverables first
+# (git add <paths>); the wrapper commits what is staged, nothing else.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-if [ "$#" -ge 1 ]; then
-  MSG="$1"
-else
-  MSG="$(cat)"
+
+if [ "$#" -lt 1 ]; then
+  echo "[tw-commit] ERROR: missing commit message." >&2
+  echo "  usage: bin/tw-commit \"<message>\" \"<role(model)>\"" >&2
+  exit 2
 fi
-HOST="$(hostname -s 2>/dev/null || hostname)"
-ROLE="${2:-unspecified}"
-SIGNATURE="Co-authored-by: Kilo $ROLE @ $HOST"
+MSG="$1"
+
+if [ "$#" -lt 2 ] || [ -z "${2:-}" ]; then
+  echo "[tw-commit] ERROR: missing role argument (Hazard 8/11 dead fallback)." >&2
+  echo "  usage: bin/tw-commit \"<message>\" \"<role(model)>\"" >&2
+  echo "  e.g.  bin/tw-commit \"M12: ...\" \"worker({{WORKER_MODEL}})\"" >&2
+  echo "  The role is REQUIRED: it forms the Co-authored-by trailer and is" >&2
+  echo "  cross-checked against the message's 'Role:' line (§2.10 rule 5)." >&2
+  exit 2
+fi
+ROLE="$2"
+SIGNATURE="Co-authored-by: Kilo $ROLE"
+
+FULL="$(mktemp)"
+trap 'rm -f "$FULL"' EXIT
+printf '%s\n\n%s\n' "$MSG" "$SIGNATURE" > "$FULL"
+
+# --- runtime protocol guards (wired here so they are NOT dead code) ---
+python3 tools/protocol_guards.py --guard commit-trailer --role "$ROLE" \
+        --message-file "$FULL"
+python3 tools/protocol_guards.py --guard append-only --repo .
+python3 tools/protocol_guards.py --guard packet-hash --repo .
+
 # ADAPT: the committing identity — repo-local so the commit does not depend
 # on the host's global git config.
 git -c user.name="{{OWNER_NAME}}" \
-    -c user.email="{{OWNER_EMAIL}}" commit -F - <<COMMIT_EOF
-$MSG
-
-$SIGNATURE
-COMMIT_EOF
+    -c user.email="{{OWNER_EMAIL}}" commit -F "$FULL"

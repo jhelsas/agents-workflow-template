@@ -32,6 +32,10 @@ handoff note otherwise.
 - **Diff-only ingestion:** the `git diff` + the SPEC acceptance criteria.
   Never the full codebase, broad file trees, or large test logs. Your
   cost ceiling depends on it (the 950:1 read:output lesson, §2.8).
+- **Packaging:** your input is materialized by
+  `bin/tw-review-diff <rev-range> [criteria-file]` — diff + acceptance
+  criteria only, self-validated by the `review-diff` guard before it is
+  emitted (§2.15).
 - **Provenance:** every number you check re-derives from a committed
   artifact or it is a Hazard-2 finding, not a footnote.
 - **Gate the math reviewer's artifacts** where your gate covers them

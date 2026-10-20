@@ -42,6 +42,10 @@ demand. The owner rules at every escalation.
   records real past failures so they are not repeated.
 - **Cost is tiered by role.** Expensive models spend their tokens on
   judgment; cheap models do the reading and the execution.
+- **The high-frequency rules are executable.** Wrapper-level guards
+  (`tools/protocol_guards.py`, AGENTS.md §2.15) catch honest mistakes — a
+  missing trailer, a deleted channel line, `--lf` with no recorded failure —
+  at the `bin/*` boundary, and a hermetic test suite pins the wiring.
 
 ## 2. Folder map
 
@@ -52,9 +56,15 @@ agent-workflow-template/
 ├── SPEC.md                      ← the milestone register (planner-owned)
 ├── ADVISOR_NOTES.md             ← advisor → planner/reviewer channel
 ├── bin/
-│   ├── tw-test                  ← targeted test wrapper (env prefix baked in)
+│   ├── tw-test                  ← targeted test wrapper (env prefix + --lf guard)
 │   ├── tw-suite                 ← full-suite pre-commit gate
-│   └── tw-commit                ← commit wrapper (identity + role trailers)
+│   ├── tw-commit                ← commit wrapper (identity + trailers + guards)
+│   └── tw-review-diff           ← reviewer packet packager (diff + criteria only)
+├── tools/
+│   └── protocol_guards.py       ← the executable protocol guards (AGENTS.md §2.15)
+├── tests/
+│   └── test_protocol_guards.py  ← hermetic guard tests (keep green)
+├── .gitignore                   ← guard/host-local state (.tw_last_failure, .tw_guards.log)
 ├── roles/                      ← the six canonical role definitions (host-neutral)
 │   ├── worker.md  reviewer.md  advisor.md  planner.md
 │   └── math-reviewer.md  math-referee.md  (the optional math pair)
@@ -73,8 +83,10 @@ agent-workflow-template/
 ```
 
 **Core set** (every project): AGENTS, SPEC, STATE, REVIEW_LOG, WORKER_LOG,
-ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the three
-`bin/` wrappers, and the four core role definitions under `roles/`.
+ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the four
+`bin/` wrappers, `tools/protocol_guards.py`,
+`tests/test_protocol_guards.py`, and the four core role definitions under
+`roles/`.
 **Optional** (math-heavy projects only): `docs/MATH-REFEREE.md`,
 `math/MATH-REVIEW.md`, and the two math role definitions.
 
@@ -92,19 +104,26 @@ ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the three
    STATE, and the `bin/` wrappers.
 3. **Adapt `bin/`** to your test runner and environment. The contract is not
    the command — it is that *nobody retypes the environment prefix by hand*
-   and nobody runs a bare global test inside a milestone.
-4. **Seed the hazard register** (AGENTS.md §2.4). It starts with the generic
+   and nobody runs a bare global test inside a milestone. `bin/tw-commit`
+   commits **staged changes only**: stage your deliverables before the
+   wrapper.
+4. **Run the guard suite and keep it green:** `python -B -m pytest
+   tests/test_protocol_guards.py -q`. It is hermetic (throwaway git
+   fixtures) and pins the wrapper wiring (AGENTS.md §2.15). Adopt the
+   shipped `.gitignore` — it covers the guard state (`.tw_last_failure`,
+   `.tw_guards.log`).
+5. **Seed the hazard register** (AGENTS.md §2.4). It starts with the generic
    classes already listed there; from then on, every real incident in YOUR
    project becomes a numbered hazard with the file, the line, the failure,
    and the fix. An empty hazard register is a lie of omission — expect the
    first incidents within a week and record them.
-5. **Assign models per role** and pin reasoning effort explicitly for each
+6. **Assign models per role** and pin reasoning effort explicitly for each
    (AGENTS.md §2.8 rules 5, 8). Expensive judgment, cheap execution.
-6. **Seed `docs/STATE-OF-THE-PROJECT.md`** §1 (what the project is, goals in
+7. **Seed `docs/STATE-OF-THE-PROJECT.md`** §1 (what the project is, goals in
    priority order) and §7 (how to run things).
-7. **Have the planner compile Round 1** into `SPEC.md` from the owner's
+8. **Have the planner compile Round 1** into `SPEC.md` from the owner's
    goals, using the milestone format verbatim (AGENTS.md §2.6).
-8. **Run one cheap milestone end-to-end** (worker → commit → WORKER_LOG →
+9. **Run one cheap milestone end-to-end** (worker → commit → WORKER_LOG →
    reviewer gate → REVIEW_LOG) before trusting the loop with real work.
 
 ## 4. Placeholders
@@ -118,11 +137,11 @@ ADVISOR_NOTES, IDEAS-REVIEWER, IDEAS-ADVISOR, BACKLOG, INVARIANTS, the three
 | `{{SUITE_CMD}}` | the full-suite gate | `bin/tw-suite` |
 | `{{OWNER_NAME}}` / `{{OWNER_EMAIL}}` | commit identity | — |
 | `{{WORKER_MODEL}}` etc. | per-role model ids | see AGENTS.md §2.8 |
-| `{{HOSTNAME}}` | the machine name in trailers | `haven` |
 
 The `tw-` script prefix is heritage from the originating project. Renaming is
-allowed but must be done in one pass: the three `bin/` files plus every
-reference in AGENTS.md and the role definitions.
+allowed but must be done in one pass: the `bin/` files plus every reference in
+AGENTS.md, `tools/protocol_guards.py`, `tests/test_protocol_guards.py`, and
+the role definitions.
 
 ## 5. Design rationale (why it is shaped this way)
 
@@ -144,7 +163,12 @@ reference in AGENTS.md and the role definitions.
 
 ## 6. Maintenance
 
-This folder is gitignored in the origin repo **by design** (it is workflow
-infrastructure, not project code) and is refreshed periodically from the
-origin project's lessons. Do not commit it into the origin repository; do
-commit the adapted copy into an adopting repository.
+In the origin repo this template lives as a **git submodule** (owner ruling,
+2026-10-19): it travels with the clone without entangling the two histories,
+and the pin is bumped when the origin's protocol evolves. It is refreshed
+periodically from the origin project's lessons — most recently with the
+executable protocol guards (M150/M151 in the origin's numbering:
+`tools/protocol_guards.py`, `bin/tw-review-diff`, the guarded
+`bin/tw-commit`/`bin/tw-test`, and the hermetic guard tests). An adopting
+project copies the tree (except this README) into its root and commits the
+adapted copy.

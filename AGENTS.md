@@ -29,7 +29,10 @@ this repository. Follow it exactly.
 >    tests/test_<module>.py -q`). DO NOT run a global test command.
 > 4. **The Last-Failed Loop:** If a test fails, switch your test command to
 >    `bin/tw-test --lf --tb=short <target>`. Execute only that targeted
->    command until the specific failing test passes.
+>    command until the specific failing test passes. `--lf` requires a
+>    **recorded** failure — the wrapper writes `.tw_last_failure` on a
+>    failing run and clears it on a passing one — so the loop cannot skip
+>    the baseline run (§2.15).
 > 5. **No Hallucinated Scope:** If a test passes, the milestone is complete.
 >    Immediately move to the next milestone in `SPEC.md`. Do not refactor
 >    passing code or expand your scope.
@@ -217,14 +220,23 @@ the wrapper — never hand-assemble the identity flags:
 bin/tw-commit "<message>" "<role>(<model>)"
 ```
 
+The wrapper's **role argument is required** — a roleless invocation fails
+closed before anything is committed (§2.15; the old `unspecified` fallback
+could never satisfy the trailer guard, and its failure misreported the
+cause — Hazard 8/11).
+
 Every commit message carries **both** trailers (the owner's convention):
 
 - a `Role: <role>(<model>)` line in the message body — the machine-readable
   role attribution, so *who produced* each commit is recoverable from
   `git log` alone;
-- a final `Co-authored-by: Kilo <role>(<model>) @ <host>` trailer — the
-  signature, recording the agent, the model, and *where* the work ran
-  (`hostname -s`).
+- a final `Co-authored-by: Kilo <role>(<model>)` trailer — the signature,
+  recording the agent and the model that did the work.
+
+The two must **agree** (same role, same model): the `commit-trailer` guard
+(§2.15) cross-checks the wrapper's role argument against the message's
+`Role:` line at commit time. Angle brackets above are placeholder notation;
+the real trailer carries no brackets and no host suffix.
 
 ### 2.6 Required `SPEC.md` format
 
@@ -304,6 +316,9 @@ Rules for all agents:
    (targeted tests), `bin/tw-suite` (the full-suite pre-commit gate), and
    `bin/tw-commit` (identity + trailers). Inside a milestone prefer
    `bin/tw-test <node>`; reserve `bin/tw-suite` for the pre-commit gate.
+   The wrappers are also where the executable protocol guards are wired
+   (§2.15) — the high-frequency rules are executed, not just documented,
+   and the wiring is pinned by a hermetic test suite.
 
 2. **Stable, append-only inter-agent files.** **Each inter-agent file has
    exactly ONE owner and can only be written by its owner.** A role may own
@@ -493,6 +508,11 @@ compaction is **scheduled, not only triggered**:
 4. **STATE refreshes on the same cadence:** re-dated and re-pointed at each
    compaction checkpoint so a cold-starting agent reads current state.
 
+A compaction legitimately rewrites channel lines, which the `append-only`
+guard would otherwise flag: exempt it at the wrapper with `TW_COMPACTION=1`
+and `TW_COMPACTION_REASON=<one line>` — an empty reason exits 2, and the
+exemption is recorded to `.tw_guards.log` (§2.15).
+
 ### 2.14 Extended-work scheduling
 
 When the owner announces an absence and asks for **extended work**, the
@@ -503,6 +523,47 @@ closed, committable deliverable at every stop. Each milestone is
 independently committable and independently gated; the worker proceeds
 autonomously through the ladder and **stops at the owner's return**. The
 reviewer batches the gates at batch close.
+
+### 2.15 Executable protocol guards (wrapper-level accident detection)
+
+The high-frequency protocol rules are **executed, not just documented**:
+`tools/protocol_guards.py` is wired into the `bin/tw-*` wrappers, and
+`tests/test_protocol_guards.py` (hermetic — throwaway git fixtures under
+`tmp_path`, no network, no project state) pins both the guards and their
+wiring. The closed guard set:
+
+| guard | wire site | catches |
+|---|---|---|
+| `ping` | CLI/tests only | wiring smoke — the module imports and answers |
+| `commit-trailer` | `bin/tw-commit` | missing/duplicated/disagreeing `Role:` vs `Co-authored-by:` trailers; `--role` vs message cross-check; `--message`/`--message-file` conflict |
+| `append-only` | `bin/tw-commit` | deletion of channel lines (§2.8 rule 2) in the staged diff |
+| `review-diff` | `bin/tw-review-diff` | a reviewer packet that is not diff + acceptance criteria (§2.8 rule 3) |
+| `lf` | `bin/tw-test` | `--lf` with no recorded failure (Part 1 step 4) |
+| `packet-hash` | `bin/tw-commit` | a frozen reviewer packet that drifted from its recorded hash (`TW_PACKET_MANIFEST`) |
+
+**Scope — read before trusting the guards.** They are wrapper-level
+**accident detection**, not authorization: the caller self-declares its
+role, so a guard cannot prove who typed a commit, and a deliberate bypass
+(editing a wrapper, invoking git directly) is out of scope by design. Exit
+codes: `0` = pass, or an inert context (a guard invoked where it does not
+govern); `2` = detected violation, with a concrete remediation message. An
+unknown guard name exits `2` — a typo must not pass silently (Hazard 8).
+
+**Escape hatches are documented, validated, and logged:**
+
+- `TW_GUARDS_BYPASS=<comma-separated guard names>` bypasses named guards;
+  unknown/empty/malformed items are **rejected** (exit 2) — a hatch that
+  fails open is a dead guard.
+- `TW_COMPACTION=1` exempts `append-only` for a §2.13 compaction;
+  `TW_COMPACTION_REASON` carries the reason (empty exits 2) and the
+  exemption is appended to `.tw_guards.log` at the repo root (gitignored).
+
+**Adoption.** Keep `tests/test_protocol_guards.py` green — its wiring tests
+read the `bin/*` files and assert the guards are actually invoked (Hazard
+11: a documented guard that is never wired is dead code). Adapt `CHANNELS`
+in `tools/protocol_guards.py` if your channel set differs from the ten in
+§2.8 rule 2, and add `.tw_last_failure` / `.tw_guards.log` to `.gitignore`
+(the shipped one already has them).
 
 ---
 
@@ -529,9 +590,12 @@ reviewer batches the gates at batch close.
 ## Part 4 — Quick reference
 
 ```bash
-bin/tw-suite        # the full-suite pre-commit gate (baseline: STATE §7)
-bin/tw-test <node>  # targeted tests, environment prefix baked in
-bin/tw-commit "<message>" "<role>(<model>)>"  # identity + trailers
+bin/tw-suite                       # the full-suite pre-commit gate (baseline: STATE §7)
+bin/tw-test <node>                 # targeted tests, env prefix baked in; --lf is guarded
+bin/tw-commit "<message>" "<role(model)>"   # identity + trailers + guards (role REQUIRED)
+bin/tw-review-diff <rev-range> [crit.md]   # the reviewer packet: diff + criteria ONLY
+
+python3 tools/protocol_guards.py --guard ping   # wiring smoke (guard set: §2.15)
 
 # the read order for any cold start:
 #   1. AGENTS.md                     (this file — the protocol)
